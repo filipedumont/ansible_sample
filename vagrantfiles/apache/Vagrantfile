@@ -1,0 +1,16 @@
+Vagrant.configure("2") do |config|
+    config.vm.define "apache_test_filipe" do |box|
+      box.vm.box = "centos/7"
+      box.vm.hostname = "jenkins"
+      box.ssh.forward_agent = true
+      box.vm.network "private_network", ip: "192.168.50.117"
+  
+      box.vm.provision 'shell' do |s|
+        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+        s.inline = <<-SHELL
+          echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+        SHELL
+      end
+    end
+  end
+  

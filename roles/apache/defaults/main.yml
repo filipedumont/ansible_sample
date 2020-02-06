@@ -1,0 +1,5 @@
+---
+apache:
+  docroot: /var/www/html
+  package: httpd
+  service: httpd
