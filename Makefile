@@ -22,3 +22,8 @@ ansible_apache:
 	@echo " > installing Apache ..."
 	@ansible-playbook -i inventories/apache -b apache.yml
 
+molecule_apache: start_apache
+	@echo " > running molecule tests for apache role..."
+	@cd roles/apache ; molecule test
+
+molecule_tests: molecule_apache

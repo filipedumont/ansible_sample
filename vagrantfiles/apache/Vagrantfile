@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
       box.vm.network "private_network", ip: "192.168.50.117"
   
       box.vm.provision 'shell' do |s|
-        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/authorized_keys").first.strip
+        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
         s.inline = <<-SHELL
           echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
         SHELL

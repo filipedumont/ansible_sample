@@ -1,5 +1,15 @@
 version: '1.0.{build}-{branch}'
-image: Ubuntu1804
+
+environment:
+  priv_key:
+    secure: <encryped-value>
+  pub_key:
+    secure: <encryped-value>
+  matrix:
+    # Ubuntu - python 3
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      PYTHON: "3.6"
+stack: python %PYTHON%
 platform: x64
 
 # Debugging via SSH
@@ -10,14 +20,31 @@ cache:
 - /home/appveyor/.vagrant.d/boxes
 
 install:
+# copying private and public keys to build
+- echo "-----BEGIN RSA PRIVATE KEY-----" > $HOME/.ssh/id_rsa
+- echo "${priv_key}" | tr " " "\n" >> $HOME/.ssh/id_rsa
+- echo "-----END RSA PRIVATE KEY-----" >> $HOME/.ssh/id_rsa
+- echo "${pub_key}" | tr " " " " >> $HOME/.ssh/id_rsa.pub
+- |
+    cat <<EOF > $HOME/.ssh/config
+      Host 192.168.50.*
+      StrictHostKeyChecking no
+      User vagrant
+    EOF
+# setting proper permission to private key
+- chmod 600 $HOME/.ssh/id_rsa
 - sudo wget https://download.virtualbox.org/virtualbox/6.1.2/virtualbox-6.1_6.1.2-135662~Ubuntu~bionic_amd64.deb
 - sudo dpkg -i virtualbox-6.1_6.1.2-135662~Ubuntu~bionic_amd64.deb
 - sudo apt-get -yq install python-pip
 # How did the VirtualBox installation go?
 - VBoxManage --version
-- sudo pip install ansible==2.9.4
+- pip install ansible==2.9.4
 # Ansible correctly installed?
 - ansible --version
+- pip install molecule
+# Molecule corretly version installed?
+- molecule --version
+- pip install python-vagrant
 
 - sudo wget -nv https://releases.hashicorp.com/vagrant/2.2.7/vagrant_2.2.7_x86_64.deb
 # Install Vagrant package
@@ -25,5 +52,5 @@ install:
 # Vagrant correctly installed?
 - vagrant --version
 
-build_script:
-- make start_apache
+test_script:
+- make molecule_tests
